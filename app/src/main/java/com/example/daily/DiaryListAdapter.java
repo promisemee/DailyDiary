@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -37,10 +39,22 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             imageView = itemView.findViewById(R.id.contentImage);
             contentView = itemView.findViewById(R.id.contentText);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION){
+                        clickListener.onItemClick(view, position);
+                    }
+
+                }
+            });
+
         }
     }
 
     @Override
+    @NonNull
     // read in the description of the layout of a single item in the list
     // use it to create a ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -49,6 +63,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     @Override
+    @NonNull
     // add String data to a ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (mDiaryList != null) {
@@ -63,7 +78,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             dateView.setText(mCurrent.getDate());
             contentView.setText(mCurrent.getContext());
             imageView.setImageBitmap(bmp);
-        }else{
         }
     }
 
@@ -94,7 +108,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     public interface ClickListener {
-        void onItemClick(Diary diary);
+        void onItemClick(View view, int position);
     }
 
     public Diary getDiaryItem(int index){

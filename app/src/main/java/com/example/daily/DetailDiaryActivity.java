@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
@@ -16,10 +17,16 @@ import com.example.daily.model.Diary;
 
 public class DetailDiaryActivity extends AppCompatActivity {
 
-    public static String EXTRA_DIARY_ID = "diary_id";
+    public static String EXTRA_DIARY_ID;
+
+    public static final int UPDATE_DIARY_ACTIVITY_REQUEST_CODE = 0;
 
     private DiaryDAO mDiaryDAO;
-    private Diary diary;
+    private Diary mCurrent;
+    TextView txt;
+    ImageView img;
+
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -30,12 +37,35 @@ public class DetailDiaryActivity extends AppCompatActivity {
                 .build()
                 .getDiaryDAO();
 
-        ImageView img = findViewById(R.id.detailImage);
-        TextView txt = findViewById(R.id.dateText);
+        position = getIntent().getIntExtra(EXTRA_DIARY_ID, 0)+1;
+        img = findViewById(R.id.detailImage);
+        txt = findViewById(R.id.detailText);
 
-        diary = mDiaryDAO.getDiaryWithId(getIntent().getIntExtra(EXTRA_DIARY_ID, -1));
-
+        loadDetail();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // really just refreshing the screen after data changes
+        if (requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+            loadDetail();
+        } else{
+            Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadDetail(){
+        mCurrent = mDiaryDAO.getDiaryWithId(position);
+//        if (mCurrent.getContext()!=null)
+//             txt.setText(mCurrent.getContext());
+        if (mCurrent==null){
+            setResult(RESULT_CANCELED);
+        }else txt.setText(mCurrent.getContext());
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -54,11 +84,12 @@ public class DetailDiaryActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.update) {
             Intent intent = new Intent(DetailDiaryActivity.this, CalendarMainActivity.class);
-            startActivity(intent);
+            intent.putExtra(UpdateDiaryActivity.EXTRA_DATA_ID, EXTRA_DIARY_ID);
+            startActivityForResult(intent,UPDATE_DIARY_ACTIVITY_REQUEST_CODE);
         }
 
         if (id == R.id.delete) {
-            mDiaryDAO.delete(diary);
+            mDiaryDAO.delete(mCurrent);
             return true;
         }
 

@@ -38,10 +38,13 @@ public class UpdateDiaryActivity extends AppCompatActivity {
     public static final int PICK_FROM_CAMERA = 0;
     public static final int PICK_FROM_ALBUM = 1;
 
+    public static String EXTRA_DATA_ID;
+
     InputMethodManager imm;
     private EditText edit;
     private ImageView imageView;
     private DiaryDAO mDiaryDAO;
+    Diary mCurrent;
     Bundle extras;
     private String date;
     private File tempFile;
@@ -62,6 +65,10 @@ public class UpdateDiaryActivity extends AppCompatActivity {
                 .build()
                 .getDiaryDAO();
 
+        mCurrent = mDiaryDAO.getDiaryWithId(getIntent().getIntExtra(EXTRA_DATA_ID, 0));
+
+
+
         imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
 
         edit = (EditText) findViewById(R.id.txt_edit);
@@ -70,6 +77,13 @@ public class UpdateDiaryActivity extends AppCompatActivity {
         Button getCamera = findViewById(R.id.camera);
         imageView = findViewById(R.id.imageView);
         int id = -1 ;
+
+        mCurrent = mDiaryDAO.getDiaryWithId(Integer.valueOf(EXTRA_DATA_ID));
+        if (mCurrent==null){
+            setResult(RESULT_CANCELED);
+        }else {
+            edit.setText(mCurrent.getContext());
+        }
 
         getPhoto.setOnClickListener(new View.OnClickListener() {
             @Override

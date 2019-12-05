@@ -14,12 +14,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.example.daily.DetailDiaryActivity.EXTRA_DIARY_ID;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -62,12 +66,13 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        //Get Detail of Diary
+        //Click to Get Detail of Diary
         mDiaryAdapter.setOnItemClickListener(new DiaryListAdapter.ClickListener(){
             @Override
-            public void onItemClick(Diary mDiary) {
+            public void onItemClick(View view, int position) {
                 Intent intent = new Intent(MainActivity.this, DetailDiaryActivity.class);
-                intent.putExtra(DetailDiaryActivity.EXTRA_DIARY_ID, mDiary.getId());
+                int id = position;
+                intent.putExtra(EXTRA_DIARY_ID, id);
                 startActivityForResult(intent, DETAIL_DIARY_ACTIVITY_REQUEST_CODE);
             }
         });
@@ -88,6 +93,9 @@ public class MainActivity extends AppCompatActivity{
             loadDiary();
         } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             loadDiary();
+        }
+        else{
+            Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
     }
 
