@@ -1,6 +1,9 @@
 package com.example.daily;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteAbortException;
 import android.graphics.Bitmap;
@@ -10,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,41 +23,35 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.room.Room;
 
 import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class AddDiaryActivity extends AppCompatActivity {
+public class AddDiaryActivity extends DiaryActivity{
 
-    public static final int PICK_FROM_CAMERA = 0;
-    public static final int PICK_FROM_ALBUM = 1;
 
-    InputMethodManager imm;
-    private EditText edit;
-    private ImageView imageView;
     private DiaryDAO mDiaryDAO;
     private String date;
-    private File tempFile;
-    String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_diary);
-
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM. dd. yyyy ");
-        date = dateFormat.format(calendar.getTime());
-        setTitle(date);
 
         mDiaryDAO = Room.databaseBuilder(this, AppDatabase.class, "db-diary")
                 .allowMainThreadQueries()   //Allows room to do operation on main thread
@@ -71,97 +69,50 @@ public class AddDiaryActivity extends AppCompatActivity {
         getPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getFromAlbum();
+                int permissionCheck = ActivityCompat.checkSelfPermission(AddDiaryActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(AddDiaryActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICK_FROM_ALBUM);
+                }else{
+                    getFromAlbum();
+                }
+
             }
 
         });
         getCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getFromCamera();
+                int permissionCheck = ContextCompat.checkSelfPermission(AddDiaryActivity.this, Manifest.permission.CAMERA);
+                if(permissionCheck==PackageManager.PERMISSION_DENIED){
+                    ActivityCompat.requestPermissions(AddDiaryActivity.this, new String[]{Manifest.permission.CAMERA},PICK_FROM_CAMERA);
+                }else{
+                    getFromCamera();
+                }
             }
 
         });
-        imageView.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
 
-            }
-        });
-
-    }
-
-    public void getFromCamera(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            tempFile = createImageFile();
-        } catch (IOException e) {
-            Toast.makeText(this, getText(R.string.sthwrong), Toast.LENGTH_SHORT).show();
-            finish();
-            e.printStackTrace();
-        }
-        if (tempFile != null) {
-            Uri photoUri = Uri.fromFile(tempFile);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-            startActivityForResult(intent, PICK_FROM_CAMERA);
-        }
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
-    public void getFromAlbum(){
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(intent, PICK_FROM_ALBUM);
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        if ((requestCode==PICK_FROM_CAMERA)&&(resultCode==RESULT_OK)){
-            setImage();
-        }
-
-        if ((requestCode==PICK_FROM_ALBUM)&&(resultCode==RESULT_OK)){
-            Uri imageUri = data.getData();
-            Cursor cursor = null;
-            try{
-                String[] proj = { MediaStore.Images.Media.DATA };
-                assert imageUri != null;
-                cursor = getContentResolver().query(imageUri, proj, null, null, null);
-                assert cursor != null;
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                tempFile = new File(cursor.getString(column_index));
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[]permissions, @NonNull int[]grantResults){
+        if (requestCode==PICK_FROM_CAMERA){
+            if(grantResults[0]==0){
+                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
             }
-            setImage();
+        }
+        if (requestCode==PICK_FROM_ALBUM){
+            if(grantResults[0]==0){
+                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
-    private void setImage(){
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
-        imageView.setImageBitmap(originalBm);
-        tempFile = null;
 
-    }
 
     //toolbar menu
     @Override
@@ -194,7 +145,7 @@ public class AddDiaryActivity extends AppCompatActivity {
             } else {
                 // Get the new word that the user entered.
                 String context = edit.getText().toString();
-                byte[] image = {};
+                byte[] image = bitmapToByte(bitmap);
                 String date = this.date;
 
                 //Input
@@ -217,12 +168,6 @@ public class AddDiaryActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void linearOnClick(View v){
-        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-    }
-
-
 
 
 

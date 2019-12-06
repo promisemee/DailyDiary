@@ -6,4 +6,5 @@
     <string name="update">update</string>
     <string name="delete">delete</string>
     <string name="share">share</string>
+    <string name="cameraError">Camera Error! Please Try again!</string>
 </resources>

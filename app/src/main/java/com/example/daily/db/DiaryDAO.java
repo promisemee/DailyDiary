@@ -22,7 +22,7 @@ public interface DiaryDAO {
     @Query("Select * FROM diary")
     public List<Diary> getDiaryList();
 
-    @Query("Select * FROM diary where id = :position")
-    public Diary getDiaryWithId(int position);
+    @Query("Select * FROM diary where id = :dId")
+    public Diary getDiaryWithId(int dId);
 }
 

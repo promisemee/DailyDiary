@@ -15,7 +15,7 @@ import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 
-public class DetailDiaryActivity extends AppCompatActivity {
+public class DetailDiaryActivity extends DiaryActivity {
 
     public static String EXTRA_DIARY_ID;
 
@@ -37,7 +37,7 @@ public class DetailDiaryActivity extends AppCompatActivity {
                 .build()
                 .getDiaryDAO();
 
-        position = getIntent().getIntExtra(EXTRA_DIARY_ID, 0)+1;
+        position = getIntent().getIntExtra(EXTRA_DIARY_ID, 0);
         img = findViewById(R.id.detailImage);
         txt = findViewById(R.id.detailText);
 
@@ -51,21 +51,25 @@ public class DetailDiaryActivity extends AppCompatActivity {
         // really just refreshing the screen after data changes
         if (requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             loadDetail();
-        } else{
+        } if(resultCode == RESULT_CANCELED){
+            ;
+        }
+
+        else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
     }
 
     private void loadDetail(){
         mCurrent = mDiaryDAO.getDiaryWithId(position);
-//        if (mCurrent.getContext()!=null)
-//             txt.setText(mCurrent.getContext());
         if (mCurrent==null){
             setResult(RESULT_CANCELED);
-        }else txt.setText(mCurrent.getContext());
+        }else {
+            if(mCurrent.getImg()!=null)
+                img.setImageBitmap(byteToBitmap(mCurrent.getImg()));
+            txt.setText(mCurrent.getContext());
+        }
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -76,23 +80,25 @@ public class DetailDiaryActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.menu.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.update) {
-            Intent intent = new Intent(DetailDiaryActivity.this, CalendarMainActivity.class);
-            intent.putExtra(UpdateDiaryActivity.EXTRA_DATA_ID, EXTRA_DIARY_ID);
+            Intent intent = new Intent(DetailDiaryActivity.this, UpdateDiaryActivity.class);
+            intent.putExtra(UpdateDiaryActivity.EXTRA_DATA_ID, position);
             startActivityForResult(intent,UPDATE_DIARY_ACTIVITY_REQUEST_CODE);
         }
 
         if (id == R.id.delete) {
             mDiaryDAO.delete(mCurrent);
-            return true;
+            setResult(RESULT_OK);
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed(){
+        setResult(RESULT_OK);
+        finish();
     }
 }

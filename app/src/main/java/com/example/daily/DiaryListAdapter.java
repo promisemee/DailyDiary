@@ -3,6 +3,7 @@ package com.example.daily;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,8 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION){
-                        clickListener.onItemClick(view, position);
+                        Diary diary = mDiaryList.get(position);
+                        clickListener.onItemClick(diary);
                     }
 
                 }
@@ -72,8 +74,11 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             TextView contentView = holder.contentView;
             ImageView imageView = holder.imageView;
 
+            Bitmap bmp = null;
             byte[] bytes = mCurrent.getImg();
-            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            if (bytes!=null){
+                bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            }
 
             dateView.setText(mCurrent.getDate());
             contentView.setText(mCurrent.getContext());
@@ -108,11 +113,8 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     public interface ClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(Diary diary);
     }
 
-    public Diary getDiaryItem(int index){
-        return mDiaryList.get(index);
-    }
 
 }

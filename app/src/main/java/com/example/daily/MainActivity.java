@@ -69,9 +69,9 @@ public class MainActivity extends AppCompatActivity{
         //Click to Get Detail of Diary
         mDiaryAdapter.setOnItemClickListener(new DiaryListAdapter.ClickListener(){
             @Override
-            public void onItemClick(View view, int position) {
+            public void onItemClick(Diary diary) {
                 Intent intent = new Intent(MainActivity.this, DetailDiaryActivity.class);
-                int id = position;
+                int id = diary.getId();
                 intent.putExtra(EXTRA_DIARY_ID, id);
                 startActivityForResult(intent, DETAIL_DIARY_ACTIVITY_REQUEST_CODE);
             }
@@ -93,11 +93,13 @@ public class MainActivity extends AppCompatActivity{
             loadDiary();
         } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             loadDiary();
-        }
-        else{
+        }else if(resultCode==RESULT_CANCELED){
+            ;
+        }else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

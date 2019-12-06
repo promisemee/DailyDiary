@@ -3,12 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.daily">
 
+    <!--permission-->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+
     <uses-feature android:name="android.hardware.camera"
                     android:required="false"/>
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+
 
     <application
         tools:ignore="GoogleAppIndexingWarning"
@@ -36,6 +47,7 @@
         <activity
             android:name=".UpdateDiaryActivity"
             android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".CalendarMainActivity"/>
     </application>
 
 </manifest>

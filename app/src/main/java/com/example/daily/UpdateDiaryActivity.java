@@ -1,6 +1,9 @@
 package com.example.daily;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteAbortException;
 import android.graphics.Bitmap;
@@ -10,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,36 +23,35 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.room.Room;
 
 import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class UpdateDiaryActivity extends AppCompatActivity {
+public class UpdateDiaryActivity extends DiaryActivity {
 
-    public static final int PICK_FROM_CAMERA = 0;
-    public static final int PICK_FROM_ALBUM = 1;
 
     public static String EXTRA_DATA_ID;
 
-    InputMethodManager imm;
-    private EditText edit;
-    private ImageView imageView;
     private DiaryDAO mDiaryDAO;
     Diary mCurrent;
-    Bundle extras;
     private String date;
-    private File tempFile;
-    String currentPhotoPath;
+    protected Bitmap bitImg;
+    byte[] image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +68,10 @@ public class UpdateDiaryActivity extends AppCompatActivity {
                 .build()
                 .getDiaryDAO();
 
-        mCurrent = mDiaryDAO.getDiaryWithId(getIntent().getIntExtra(EXTRA_DATA_ID, 0));
+        setPage();
+    }
 
-
-
+    private void setPage(){
         imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
 
         edit = (EditText) findViewById(R.id.txt_edit);
@@ -76,18 +79,26 @@ public class UpdateDiaryActivity extends AppCompatActivity {
         Button getPhoto = findViewById(R.id.gallery);
         Button getCamera = findViewById(R.id.camera);
         imageView = findViewById(R.id.imageView);
-        int id = -1 ;
 
-        mCurrent = mDiaryDAO.getDiaryWithId(Integer.valueOf(EXTRA_DATA_ID));
+        int id = getIntent().getIntExtra(EXTRA_DATA_ID, 0);
+        mCurrent = mDiaryDAO.getDiaryWithId(id);
+
         if (mCurrent==null){
             setResult(RESULT_CANCELED);
         }else {
+            if (mCurrent.getImg()!=null)
+                bitImg = byteToBitmap(mCurrent.getImg());
             edit.setText(mCurrent.getContext());
+            imageView.setImageBitmap(bitImg);
         }
 
         getPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int permissionCheck = ActivityCompat.checkSelfPermission(UpdateDiaryActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(UpdateDiaryActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICK_FROM_ALBUM);
+                }
                 getFromAlbum();
             }
 
@@ -95,83 +106,43 @@ public class UpdateDiaryActivity extends AppCompatActivity {
         getCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int permissionCheck = ContextCompat.checkSelfPermission(UpdateDiaryActivity.this, Manifest.permission.CAMERA);
+                if(permissionCheck==PackageManager.PERMISSION_DENIED){
+                    ActivityCompat.requestPermissions(UpdateDiaryActivity.this, new String[]{Manifest.permission.CAMERA},PICK_FROM_CAMERA);
+                }
                 getFromCamera();
             }
 
         });
 
-    }
+        imageView.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                final String[] options = new String[]{"update","delete","crop"};
 
-    public void getFromCamera(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            tempFile = createImageFile();
-        } catch (IOException e) {
-            Toast.makeText(this, getText(R.string.sthwrong), Toast.LENGTH_SHORT).show();
-            finish();
-            e.printStackTrace();
-        }
-        if (tempFile != null) {
-            Uri photoUri = Uri.fromFile(tempFile);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-            startActivityForResult(intent, PICK_FROM_CAMERA);
-        }
-    }
+                AlertDialog.Builder dialog = new AlertDialog.Builder(UpdateDiaryActivity.this);
 
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
+                dialog  .setTitle("Options?")
+                        .setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(options[i]){
+                            case "update":
+                                getFromAlbum();
+                                break;
+                            case "delete":
+                                image = null;
+                                imageView.setImageBitmap(null);
 
-    public void getFromAlbum(){
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(intent, PICK_FROM_ALBUM);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        if ((requestCode==PICK_FROM_CAMERA)&&(resultCode==RESULT_OK)){
-            setImage();
-        }
-
-        if ((requestCode==PICK_FROM_ALBUM)&&(resultCode==RESULT_OK)){
-            Uri imageUri = data.getData();
-            Cursor cursor = null;
-            try{
-                String[] proj = { MediaStore.Images.Media.DATA };
-                assert imageUri != null;
-                cursor = getContentResolver().query(imageUri, proj, null, null, null);
-                assert cursor != null;
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                tempFile = new File(cursor.getString(column_index));
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+                                break;
+                            case "crop":
+                                break;
+                        }
+                    }
+                })
+                        .show();
             }
-            setImage();
-        }
-    }
-
-    private void setImage(){
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
-        imageView.setImageBitmap(originalBm);
-        tempFile = null;
-
+        });
     }
 
     //toolbar menu
@@ -197,24 +168,23 @@ public class UpdateDiaryActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_check) {
-            // Create a new Intent for the reply.
             Intent replyIntent = new Intent();
             if (TextUtils.isEmpty(edit.getText())) {
-                // No word was entered, set the result accordingly.
                 setResult(RESULT_CANCELED, replyIntent);
             } else {
-                // Get the new word that the user entered.
                 String context = edit.getText().toString();
-                byte[] image = {};
+
+                if (image != null){
+                    image = bitmapToByte(bitImg);
+                }
                 String date = this.date;
 
                 //Input
-                Diary diary = new Diary();
-                diary.setContext(context);
-                diary.setDate(date);
-                diary.setImg(image);
+                mCurrent.setContext(context);
+                mCurrent.setDate(date);
+                mCurrent.setImg(image);
                 try{
-                    mDiaryDAO.insert(diary);
+                    mDiaryDAO.update(mCurrent);
                 }catch (SQLiteAbortException e){
                     Toast.makeText(UpdateDiaryActivity.this, getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
                 }
@@ -228,12 +198,6 @@ public class UpdateDiaryActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void linearOnClick(View v){
-        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-    }
-
-
 
 
 
