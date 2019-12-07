@@ -24,5 +24,11 @@ public interface DiaryDAO {
 
     @Query("Select * FROM diary where id = :dId")
     public Diary getDiaryWithId(int dId);
+
+    @Query ("Select * FROM diary where dayOfMonth = :d and month =:m and year = :y")
+    public List<Diary> getDiaryListWithDate(int d, int m, int y);
+
+    @Query("Delete FROM diary")
+    public void deleteAll();
 }
 

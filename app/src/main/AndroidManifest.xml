@@ -42,12 +42,14 @@
 
         <activity
             android:name=".AddDiaryActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".DetailDiaryActivity" />
         <activity
             android:name=".UpdateDiaryActivity"
             android:windowSoftInputMode="adjustResize"/>
-        <activity android:name=".CalendarMainActivity"/>
+        <activity android:name=".CalendarMainActivity" />
+        <activity android:name=".DrawActivity" />
+        <activity android:name=".SettingsActivity"/>
     </application>
 
 </manifest>

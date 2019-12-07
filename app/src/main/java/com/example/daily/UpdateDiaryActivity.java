@@ -1,6 +1,7 @@
 package com.example.daily;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +9,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteAbortException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -30,6 +34,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.room.Room;
+import androidx.room.Update;
 
 import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
@@ -47,18 +52,11 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
     public static String EXTRA_DATA_ID;
 
-    private DiaryDAO mDiaryDAO;
-    Diary mCurrent;
-    private String date;
-    protected Bitmap bitImg;
-    byte[] image;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_diary);
 
-        Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM. dd. yyyy ");
         date = dateFormat.format(calendar.getTime());
         setTitle(date);
@@ -76,9 +74,13 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
         edit = (EditText) findViewById(R.id.txt_edit);
         edit.requestFocus();
+
+        imageView = findViewById(R.id.imageView);
+
         Button getPhoto = findViewById(R.id.gallery);
         Button getCamera = findViewById(R.id.camera);
-        imageView = findViewById(R.id.imageView);
+        Button getDate = findViewById(R.id.date);
+        Button getDraw = findViewById(R.id.draw);
 
         int id = getIntent().getIntExtra(EXTRA_DATA_ID, 0);
         mCurrent = mDiaryDAO.getDiaryWithId(id);
@@ -92,6 +94,8 @@ public class UpdateDiaryActivity extends DiaryActivity {
             imageView.setImageBitmap(bitImg);
         }
 
+
+        //OnClick Listeners
         getPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,28 +116,56 @@ public class UpdateDiaryActivity extends DiaryActivity {
                 }
                 getFromCamera();
             }
+        });
+
+        getDraw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startDrawing();
+            }
+
+        });
+
+        getDate.setOnClickListener(new View.OnClickListener(){
+           @Override
+           public void onClick(View v){
+               DatePickerDialog dialog = new DatePickerDialog(UpdateDiaryActivity.this, new DatePickerDialog.OnDateSetListener() {
+                   @Override
+                   public void onDateSet(DatePicker datePicker, int year, int month, int d) {
+
+                       date = String.format("%d 년 %d 월 %d 일", year, month+1, d);
+                       Toast.makeText(UpdateDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
+                       setTitle(date);
+                   }
+               }, mYear, mMonth, mDate);
+
+               dialog.show();
+
+            }
+        });
+
+        getDraw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startDrawing();
+            }
 
         });
 
         imageView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                final String[] options = new String[]{"update","delete","crop"};
+                final String[] options = new String[]{getString(R.string.delete),getString(R.string.crop)};
 
                 AlertDialog.Builder dialog = new AlertDialog.Builder(UpdateDiaryActivity.this);
 
-                dialog  .setTitle("Options?")
-                        .setItems(options, new DialogInterface.OnClickListener() {
+                dialog  .setItems(options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         switch(options[i]){
-                            case "update":
-                                getFromAlbum();
-                                break;
                             case "delete":
-                                image = null;
                                 imageView.setImageBitmap(null);
-
+                                sign = 0;
                                 break;
                             case "crop":
                                 break;
@@ -169,20 +201,32 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
         if (id == R.id.action_check) {
             Intent replyIntent = new Intent();
-            if (TextUtils.isEmpty(edit.getText())) {
+            if (TextUtils.isEmpty(edit.getText())&&(image == null)) {
                 setResult(RESULT_CANCELED, replyIntent);
             } else {
                 String context = edit.getText().toString();
 
-                if (image != null){
-                    image = bitmapToByte(bitImg);
-                }
                 String date = this.date;
 
                 //Input
                 mCurrent.setContext(context);
-                mCurrent.setDate(date);
-                mCurrent.setImg(image);
+                mCurrent.setYear(mYear);
+                mCurrent.setMonth(mMonth);
+                mCurrent.setDayOfMonth(mDate);
+
+                Drawable drawable = imageView.getDrawable();
+                if (sign==1){
+                    Bitmap bmp = ((BitmapDrawable)drawable).getBitmap();
+                    if (bmp == null) {
+                        mCurrent.setImg(null);
+                    }else{
+                        byte[] img = bitmapToByte(bmp);
+                        mCurrent.setImg(img);
+                    }
+
+                }else{
+                    mCurrent.setImg(null);
+                }
                 try{
                     mDiaryDAO.update(mCurrent);
                 }catch (SQLiteAbortException e){
@@ -190,16 +234,13 @@ public class UpdateDiaryActivity extends DiaryActivity {
                 }
 
                 // Set the result status to indicate success.
-                setResult(RESULT_OK, replyIntent);
+                setResult(RESULT_OK);
             }
             finish();
         }
 
-
         return super.onOptionsItemSelected(item);
     }
-
-
 
 
 }

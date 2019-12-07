@@ -13,7 +13,9 @@ public class Diary{
     @NonNull
     private int id;
 
-    private String date;
+    private int dayOfMonth;
+    private int month;
+    private int year;
     private byte[] img;
     private String context;
 
@@ -21,9 +23,9 @@ public class Diary{
         return id;
     }
 
-    public String getDate() {
-        return date;
-    }
+    public int getDayOfMonth(){ return dayOfMonth;}
+    public int getMonth() {return month;}
+    public int getYear(){ return year;}
     public String getContext(){
         return context;
     }
@@ -35,8 +37,16 @@ public class Diary{
         this.id = id;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setDayOfMonth(int dom){
+        this.dayOfMonth = dom;
+    }
+
+    public void setMonth(int m){
+        this.month = m;
+    }
+
+    public void setYear(int y){
+        this.year = y;
     }
 
     public void setImg(byte[] img){

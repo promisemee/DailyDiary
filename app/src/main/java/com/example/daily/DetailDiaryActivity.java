@@ -2,6 +2,7 @@ package com.example.daily;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -46,18 +47,13 @@ public class DetailDiaryActivity extends DiaryActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
         // really just refreshing the screen after data changes
-        if (requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+        if ((requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE) && (resultCode == RESULT_OK)) {
             loadDetail();
-        } if(resultCode == RESULT_CANCELED){
-            ;
-        }
-
-        else{
+        } else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
+        loadDetail();
     }
 
     private void loadDetail(){
@@ -67,6 +63,7 @@ public class DetailDiaryActivity extends DiaryActivity {
         }else {
             if(mCurrent.getImg()!=null)
                 img.setImageBitmap(byteToBitmap(mCurrent.getImg()));
+            else img.setImageBitmap(null);
             txt.setText(mCurrent.getContext());
         }
     }

@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity{
 
     public static final int NEW_DIARY_ACTIVITY_REQUEST_CODE = 1;
     public static final int DETAIL_DIARY_ACTIVITY_REQUEST_CODE = 2;
+    private static final int SETTING_ACTIVITY_REQUEST_CODE = 3;
 
     private DiaryDAO mDiaryDAO;
 
@@ -93,8 +94,8 @@ public class MainActivity extends AppCompatActivity{
             loadDiary();
         } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             loadDiary();
-        }else if(resultCode==RESULT_CANCELED){
-            ;
+        }else if(requestCode==SETTING_ACTIVITY_REQUEST_CODE){
+            loadDiary();
         }else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
@@ -119,6 +120,8 @@ public class MainActivity extends AppCompatActivity{
         }
 
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivityForResult(intent, SETTING_ACTIVITY_REQUEST_CODE);
             return true;
         }
 

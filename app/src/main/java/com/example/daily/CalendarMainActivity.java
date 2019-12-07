@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CalendarView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,12 +21,13 @@ import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.example.daily.DetailDiaryActivity.EXTRA_DIARY_ID;
-
-public class CalendarMainActivity extends AppCompatActivity{
+public class CalendarMainActivity extends AppCompatActivity {
 
     public static final int NEW_DIARY_ACTIVITY_REQUEST_CODE = 1;
     public static final int DETAIL_DIARY_ACTIVITY_REQUEST_CODE = 2;
@@ -31,8 +35,15 @@ public class CalendarMainActivity extends AppCompatActivity{
     private DiaryDAO mDiaryDAO;
 
     RecyclerView mRecyclerView;
-    DiaryListAdapter mDiaryAdapter;
+    CalendarListAdapter mCalendarAdapter;
     List<Diary> mDiaryList = new LinkedList<>();
+    CalendarView mCalendarView;
+
+    Calendar calendar;
+
+    int mDate, mMonth, mYear;
+
+    TextView tv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +57,35 @@ public class CalendarMainActivity extends AppCompatActivity{
 
         mRecyclerView = findViewById(R.id.recyclerviewCalendar);
 
-        mDiaryAdapter = new DiaryListAdapter(this, mDiaryList);
-        mRecyclerView.setAdapter(mDiaryAdapter);
+        mCalendarAdapter = new CalendarListAdapter(this, mDiaryList);
+        mRecyclerView.setAdapter(mCalendarAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        calendar = Calendar.getInstance();
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH)+1;
+        mDate = calendar.get(Calendar.DAY_OF_MONTH);
 
-        loadDiary();
+        mCalendarView = findViewById(R.id.calendarView);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String selectedDate = sdf.format(new Date(mCalendarView.getDate()));
+
+        mCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int day) {
+                //pick date from calendar
+                mDate = day;
+                mMonth = month + 1;
+                mYear = year;
+                loadDateDiary();
+            }
+        });
+        loadDateDiary();
+
     }
 
-    private void loadDiary(){
-        mDiaryAdapter.updateDiary(mDiaryDAO.getDiaryList());
+    private void loadDateDiary() {
+        mCalendarAdapter.updateDiary(mDiaryDAO.getDiaryListWithDate(mDate, mMonth, mYear));
     }
 
     @Override
@@ -64,37 +94,11 @@ public class CalendarMainActivity extends AppCompatActivity{
 
         // really just refreshing the screen after data changes
         if (requestCode == NEW_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            loadDiary();
+            loadDateDiary();
         } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            loadDiary();
+            loadDateDiary();
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
         }
-        else{
-            Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu.menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_calendar) {
-            Intent intent = new Intent(CalendarMainActivity.this, CalendarMainActivity.class);
-            startActivity(intent);
-        }
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

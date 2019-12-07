@@ -1,17 +1,12 @@
 package com.example.daily;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteAbortException;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -19,13 +14,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.DatePicker;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.room.Room;
@@ -34,10 +26,6 @@ import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -62,20 +50,30 @@ public class AddDiaryActivity extends DiaryActivity{
 
         edit = findViewById(R.id.txt_edit);
         edit.requestFocus();
-        Button getPhoto = findViewById(R.id.gallery);
-        Button getCamera = findViewById(R.id.camera);
         imageView = findViewById(R.id.imageView);
 
+        Button getPhoto = findViewById(R.id.gallery);
+        Button getCamera = findViewById(R.id.camera);
+        Button getDate = findViewById(R.id.date);
+        Button getDraw = findViewById(R.id.draw);
+
+        //set date int title (today)
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yy");
+        date = df.format(c);
+
+        setTitle(date);
+
+
+        //OnClick Listeners
         getPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int permissionCheck = ActivityCompat.checkSelfPermission(AddDiaryActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
                 if (permissionCheck == PackageManager.PERMISSION_DENIED) {
                     ActivityCompat.requestPermissions(AddDiaryActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICK_FROM_ALBUM);
-                }else{
-                    getFromAlbum();
                 }
-
+                getFromAlbum();
             }
 
         });
@@ -85,31 +83,65 @@ public class AddDiaryActivity extends DiaryActivity{
                 int permissionCheck = ContextCompat.checkSelfPermission(AddDiaryActivity.this, Manifest.permission.CAMERA);
                 if(permissionCheck==PackageManager.PERMISSION_DENIED){
                     ActivityCompat.requestPermissions(AddDiaryActivity.this, new String[]{Manifest.permission.CAMERA},PICK_FROM_CAMERA);
-                }else{
-                    getFromCamera();
                 }
+                getFromCamera();
             }
 
         });
 
-    }
+        getDraw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startDrawing();
+            }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[]permissions, @NonNull int[]grantResults){
-        if (requestCode==PICK_FROM_CAMERA){
-            if(grantResults[0]==0){
-                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
-            }else{
-                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
+        });
+
+        getDate.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                DatePickerDialog dialog = new DatePickerDialog(AddDiaryActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+
+                        mYear = year;
+                        mMonth = month+1;
+                        mDate = dayOfMonth;
+                        date = String.format("%d 년 %d 월 %d 일", year, month+1, dayOfMonth);
+                        Toast.makeText(AddDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
+                        setTitle(date);
+                    }
+                }, mYear, mMonth, mDate );
+
+                dialog.show();
+
             }
-        }
-        if (requestCode==PICK_FROM_ALBUM){
-            if(grantResults[0]==0){
-                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
-            }else{
-                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
+        });
+
+        imageView.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                final String[] options = new String[]{getString(R.string.delete),getString(R.string.crop)};
+
+                AlertDialog.Builder dialog = new AlertDialog.Builder(AddDiaryActivity.this);
+
+                dialog  .setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch(options[i]){
+                            case "delete":
+                                imageView.setImageBitmap(null);
+                                sign = 0;
+                                break;
+                            case "crop":
+                                break;
+                        }
+                    }
+                })
+                        .show();
             }
-        }
+        });
+
     }
 
 
@@ -145,13 +177,19 @@ public class AddDiaryActivity extends DiaryActivity{
             } else {
                 // Get the new word that the user entered.
                 String context = edit.getText().toString();
-                byte[] image = bitmapToByte(bitmap);
+                byte[] image = null;
+                if (bitmap!=null){
+                    image = bitmapToByte(bitmap);
+                }
                 String date = this.date;
 
                 //Input
                 Diary diary = new Diary();
                 diary.setContext(context);
-                diary.setDate(date);
+                diary.setYear(mYear);
+                diary.setMonth(mMonth);
+                diary.setDayOfMonth(mDate);
+
                 diary.setImg(image);
                 try{
                     mDiaryDAO.insert(diary);

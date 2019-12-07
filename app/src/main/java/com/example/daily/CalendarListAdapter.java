@@ -16,12 +16,12 @@ import java.util.List;
 
 import com.example.daily.model.Diary;
 
-public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.ViewHolder> {
+public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapter.ViewHolder> {
     private final LayoutInflater mInflater;
     private List<Diary> mDiaryList;
     private static ClickListener clickListener;
 
-    DiaryListAdapter(Context context, List<Diary> diaryList)
+    CalendarListAdapter(Context context, List<Diary> diaryList)
     {
         mInflater = LayoutInflater.from(context);
         this.mDiaryList = diaryList;
@@ -34,9 +34,9 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
 
         private ViewHolder(View itemView) {
             super(itemView);
-            dateView = itemView.findViewById(R.id.dateText);
-            imageView = itemView.findViewById(R.id.contentImage);
-            contentView = itemView.findViewById(R.id.contentText);
+            dateView = itemView.findViewById(R.id.calendarDate);
+            imageView = itemView.findViewById(R.id.calendarImage);
+            contentView = itemView.findViewById(R.id.calendarText);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -58,7 +58,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     // read in the description of the layout of a single item in the list
     // use it to create a ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = mInflater.inflate(R.layout.diary_item, parent, false);
+        View itemView = mInflater.inflate(R.layout.calendar_item, parent, false);
         return new ViewHolder(itemView);
     }
 
@@ -109,7 +109,7 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     public void setOnItemClickListener(ClickListener clickListener) {
-        DiaryListAdapter.clickListener = clickListener;
+        CalendarListAdapter.clickListener = clickListener;
     }
 
     public interface ClickListener {
