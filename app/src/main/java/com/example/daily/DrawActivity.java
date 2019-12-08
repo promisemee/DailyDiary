@@ -39,7 +39,28 @@ public class DrawActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_x) {
-            draw.onClickUndo();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setMessage(getString(R.string.cancel));
+
+            builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int id)
+                {
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
+            });
+
+            builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int id)
+                {
+                }
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+
         }
         if (id == R.id.action_check){
             //save drawing
@@ -57,28 +78,33 @@ public class DrawActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
+        if (draw.getListSize()<=0){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(getString(R.string.cancel));
 
-        builder.setMessage(getString(R.string.cancel));
+            builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int id)
+                {
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
+            });
 
-        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener(){
-            @Override
-            public void onClick(DialogInterface dialog, int id)
-            {
-                setResult(RESULT_CANCELED);
-                finish();
-            }
-        });
+            builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int id)
+                {
+                }
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
 
-        builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener(){
-            @Override
-            public void onClick(DialogInterface dialog, int id)
-            {
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        }
+        draw.onClickUndo();
 
     }
+
+
 }

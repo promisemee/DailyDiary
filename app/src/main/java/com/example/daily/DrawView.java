@@ -27,6 +27,10 @@ public class DrawView extends View {
         setupDrawing();
     }
 
+    public int getListSize(){
+        return pathList.size();
+    }
+
     private void setupDrawing(){
 
         drawPath = new Path();

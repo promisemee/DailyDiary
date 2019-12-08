@@ -5,6 +5,9 @@
 
     <string name="sthwrong">Something went wrong! Please Try Again!</string>
 
+    <string name="nodiary">No Diary!</string>
+    <string name="seemore">See More...</string>
+
     <!--Settings-->
     <string name="deleteAll">Delete All Diary</string>
 
@@ -14,11 +17,13 @@
     <string name="no">no</string>
 
     <!--Detail Diary-->
+    <string name="update">update</string>
     <string name="delete">delete</string>
     <string name="share">share</string>
 
     <!--Add&Update Diary-->
     <string name="crop">Crop</string>
+    u
     <string-array name="options">
         <item>@string/delete</item>
         <item>@string/crop</item>

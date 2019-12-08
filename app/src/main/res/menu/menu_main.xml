@@ -8,7 +8,7 @@
     <item
         android:id="@+id/action_settings"
         android:title=""
-        android:icon="@drawable/search"
+        android:icon="@drawable/settings"
         app:showAsAction="ifRoom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
@@ -16,7 +16,7 @@
     <item
         android:id="@+id/action_calendar"
         android:title=""
-        android:icon="@drawable/calendar"
+        android:icon="@drawable/calendar0"
         app:showAsAction="ifRoom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

@@ -20,11 +20,13 @@ public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapte
     private final LayoutInflater mInflater;
     private List<Diary> mDiaryList;
     private static ClickListener clickListener;
+    private Context context;
 
     CalendarListAdapter(Context context, List<Diary> diaryList)
     {
         mInflater = LayoutInflater.from(context);
         this.mDiaryList = diaryList;
+        this.context = context;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -76,14 +78,24 @@ public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapte
             byte[] bytes = mCurrent.getImg();
             if (bytes!=null){
                 bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                imageView.setImageBitmap(bmp);
             }
 
-            String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear();
+            String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth();
+
 
             dateView.setText(date);
-            contentView.setText(mCurrent.getContext());
-            imageView.setImageBitmap(bmp);
+            contentView.setText(cutString(mCurrent.getContext()));
+
         }
+    }
+
+    public String cutString(String temp){
+        String cut = temp;
+        if (temp.length()>=20){
+            cut = temp.substring(0,20)+"..."+"\n"+context.getString(R.string.seemore);
+        }
+        return cut+"\n";
     }
 
 

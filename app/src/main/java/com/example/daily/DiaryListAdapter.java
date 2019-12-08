@@ -20,10 +20,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     private final LayoutInflater mInflater;
     private List<Diary> mDiaryList;
     private static ClickListener clickListener;
+    private Context context;
 
     DiaryListAdapter(Context context, List<Diary> diaryList)
     {
         mInflater = LayoutInflater.from(context);
+        this.context = context;
         this.mDiaryList = diaryList;
     }
 
@@ -49,7 +51,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
 
                 }
             });
-
         }
     }
 
@@ -76,16 +77,28 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             byte[] bytes = mCurrent.getImg();
             if (bytes!=null){
                 bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                imageView.setImageBitmap(bmp);
+            }else{
+                imageView .setVisibility(View.GONE);
             }
 
             String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear();
 
             dateView.setText(date);
-            contentView.setText(mCurrent.getContext());
-            imageView.setImageBitmap(bmp);
+            contentView.setText(cutString(mCurrent.getContext()));
+
+            cutString(mCurrent.getContext());
         }
     }
 
+
+    public String cutString(String temp){
+        String cut = temp;
+        if (temp.length()>=100){
+            cut = temp.substring(0,100)+"..."+"\n\n"+context.getString(R.string.seemore);
+        }
+        return cut+"\n";
+    }
 
     // getItemCount() is called many times, and when it is first called,
     // mWordList has not been updated (means initially, it's null, and we can't return null).

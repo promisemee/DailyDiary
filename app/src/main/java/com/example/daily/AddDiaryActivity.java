@@ -111,7 +111,7 @@ public class AddDiaryActivity extends DiaryActivity{
                         Toast.makeText(AddDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
                         setTitle(date);
                     }
-                }, mYear, mMonth, mDate );
+                }, mYear, mMonth-1, mDate );
 
                 dialog.show();
 

@@ -2,9 +2,6 @@ package com.example.daily;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,7 +16,6 @@ import androidx.room.Room;
 import com.example.daily.db.AppDatabase;
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

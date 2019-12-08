@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,7 +64,10 @@ public class DetailDiaryActivity extends DiaryActivity {
         }else {
             if(mCurrent.getImg()!=null)
                 img.setImageBitmap(byteToBitmap(mCurrent.getImg()));
-            else img.setImageBitmap(null);
+            else {
+                img.setImageBitmap(null);
+                img .setVisibility(View.GONE);
+            }
             txt.setText(mCurrent.getContext());
         }
     }

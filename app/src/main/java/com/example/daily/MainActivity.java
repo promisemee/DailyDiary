@@ -47,9 +47,6 @@ public class MainActivity extends AppCompatActivity{
                 .build()
                 .getDiaryDAO();
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         mRecyclerView = findViewById(R.id.recyclerview);
 
         mDiaryAdapter = new DiaryListAdapter(this, mDiaryList);
@@ -96,6 +93,8 @@ public class MainActivity extends AppCompatActivity{
             loadDiary();
         }else if(requestCode==SETTING_ACTIVITY_REQUEST_CODE){
             loadDiary();
+        }else if(resultCode == RESULT_CANCELED){
+            ;
         }else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
