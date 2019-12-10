@@ -3,18 +3,31 @@ package com.example.daily;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.icu.util.Output;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class DrawActivity extends AppCompatActivity {
+    public static final String EXTRA_OUTPUT = "draw_output";
+
     DrawView draw;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +43,7 @@ public class DrawActivity extends AppCompatActivity {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -64,13 +78,36 @@ public class DrawActivity extends AppCompatActivity {
         }
         if (id == R.id.action_check){
             //save drawing
-            Log.i("TEST", "drawing");
-            Intent intent = new Intent();
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            draw.canvasBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
-            byte[] array = stream.toByteArray();
-            intent.putExtra("drawing", array);
-            setResult(RESULT_OK, intent);
+            Intent intent = getIntent();
+            String mCurrentPhotoPath = intent.getStringExtra(EXTRA_OUTPUT);
+            if (mCurrentPhotoPath!=null) {
+
+                File file = new File(mCurrentPhotoPath);
+                Bitmap bitmap = draw.canvasBitmap;
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 80 /*ignored for PNG*/, bos);
+                byte[] bitmapdata = bos.toByteArray();
+
+                //write the bytes in file
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    fos.write(bitmapdata);
+                    fos.flush();
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                setResult(RESULT_OK, intent);
+            }
+            else{
+                Log.i("#TEST", "tt");
+            }
             finish();
         }
         return super.onOptionsItemSelected(item);
@@ -105,6 +142,5 @@ public class DrawActivity extends AppCompatActivity {
         draw.onClickUndo();
 
     }
-
 
 }

@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
 import com.example.daily.db.AppDatabase;
@@ -51,7 +50,10 @@ public class DetailDiaryActivity extends DiaryActivity {
         // really just refreshing the screen after data changes
         if ((requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE) && (resultCode == RESULT_OK)) {
             loadDetail();
-        } else{
+        }else if ((requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE) && (resultCode == RESULT_CANCELED)){
+            //IGNORE RESULT_CANECELED;
+            ;
+        }else{
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong),Toast.LENGTH_SHORT).show();
         }
         loadDetail();
@@ -69,6 +71,10 @@ public class DetailDiaryActivity extends DiaryActivity {
                 img .setVisibility(View.GONE);
             }
             txt.setText(mCurrent.getContext());
+
+            String dateString = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear()%100;
+            setTitle(dateString);
+
         }
     }
 

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Calendar;
 import java.util.List;
 
 import com.example.daily.model.Diary;
@@ -74,18 +75,20 @@ public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapte
             TextView contentView = holder.contentView;
             ImageView imageView = holder.imageView;
 
-            Bitmap bmp = null;
+            imageView.setImageBitmap(null);
+            Bitmap bmp;
             byte[] bytes = mCurrent.getImg();
             if (bytes!=null){
                 bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 imageView.setImageBitmap(bmp);
             }
 
-            String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth();
-
+            String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear()%100;
 
             dateView.setText(date);
             contentView.setText(cutString(mCurrent.getContext()));
+
+            cutString(mCurrent.getContext());
 
         }
     }
@@ -113,9 +116,6 @@ public class CalendarListAdapter extends RecyclerView.Adapter<CalendarListAdapte
         notifyDataSetChanged();
     }
 
-    // Gets the word at a given position.
-    // This method is useful for identifying which word
-    // was clicked in methods that handle user events.
     private Diary getDiaryAtPosition(int position) {
         return mDiaryList.get(position);
     }

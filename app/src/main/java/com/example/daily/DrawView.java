@@ -1,6 +1,5 @@
 package com.example.daily;
 
-import android.util.Log;
 import android.view.View;
 import android.content.Context;
 import android.graphics.Bitmap;

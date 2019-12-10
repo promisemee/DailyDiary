@@ -57,22 +57,17 @@ public class UpdateDiaryActivity extends DiaryActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_diary);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM. dd. yyyy ");
-        date = dateFormat.format(calendar.getTime());
-        setTitle(date);
-
         mDiaryDAO = Room.databaseBuilder(this, AppDatabase.class, "db-diary")
                 .allowMainThreadQueries()   //Allows room to do operation on main thread
                 .build()
                 .getDiaryDAO();
-
         setPage();
     }
 
     private void setPage(){
         imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
 
-        edit = (EditText) findViewById(R.id.txt_edit);
+        edit = findViewById(R.id.txt_edit);
         edit.requestFocus();
 
         imageView = findViewById(R.id.imageView);
@@ -84,6 +79,9 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
         int id = getIntent().getIntExtra(EXTRA_DATA_ID, 0);
         mCurrent = mDiaryDAO.getDiaryWithId(id);
+
+        String dateString = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear()%100;
+        setTitle(dateString);
 
         if (mCurrent==null){
             setResult(RESULT_CANCELED);
@@ -121,7 +119,7 @@ public class UpdateDiaryActivity extends DiaryActivity {
         getDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startDrawing();
+                getFromDrawing();
             }
 
         });
@@ -133,23 +131,18 @@ public class UpdateDiaryActivity extends DiaryActivity {
                    @Override
                    public void onDateSet(DatePicker datePicker, int year, int month, int d) {
 
-                       date = String.format("%d 년 %d 월 %d 일", year, month+1, d);
+                       mMonth = month+1;
+                       mYear = year;
+                       mDate = d;
+                       date = String.format("%d.%d.%d", mYear, mMonth, mDate);
                        Toast.makeText(UpdateDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
                        setTitle(date);
                    }
-               }, mYear, mMonth, mDate);
+               }, mYear, mMonth-1, mDate);
 
                dialog.show();
 
             }
-        });
-
-        getDraw.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startDrawing();
-            }
-
         });
 
         imageView.setOnClickListener(new View.OnClickListener(){
@@ -201,12 +194,11 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
         if (id == R.id.action_check) {
             Intent replyIntent = new Intent();
-            if (TextUtils.isEmpty(edit.getText())&&(image == null)) {
+            Drawable drawable = imageView.getDrawable();
+            if (TextUtils.isEmpty(edit.getText())&&(sign != 1)) {
                 setResult(RESULT_CANCELED, replyIntent);
             } else {
                 String context = edit.getText().toString();
-
-                String date = this.date;
 
                 //Input
                 mCurrent.setContext(context);
@@ -214,12 +206,13 @@ public class UpdateDiaryActivity extends DiaryActivity {
                 mCurrent.setMonth(mMonth);
                 mCurrent.setDayOfMonth(mDate);
 
-                Drawable drawable = imageView.getDrawable();
                 if (sign==1){
                     Bitmap bmp = ((BitmapDrawable)drawable).getBitmap();
                     if (bmp == null) {
+                        Log.i("#TEST", "image Null");
                         mCurrent.setImg(null);
                     }else{
+                        Log.i("#TEST", "image Not Null");
                         byte[] img = bitmapToByte(bmp);
                         mCurrent.setImg(img);
                     }

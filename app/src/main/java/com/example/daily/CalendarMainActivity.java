@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -23,9 +22,10 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.example.daily.DetailDiaryActivity.EXTRA_DIARY_ID;
+
 public class CalendarMainActivity extends AppCompatActivity {
 
-    public static final int NEW_DIARY_ACTIVITY_REQUEST_CODE = 1;
     public static final int DETAIL_DIARY_ACTIVITY_REQUEST_CODE = 2;
 
     private DiaryDAO mDiaryDAO;
@@ -76,8 +76,17 @@ public class CalendarMainActivity extends AppCompatActivity {
                 loadDateDiary();
             }
         });
-        loadDateDiary();
 
+        mCalendarAdapter.setOnItemClickListener(new CalendarListAdapter.ClickListener(){
+            @Override
+            public void onItemClick(Diary diary) {
+                Intent intent = new Intent(CalendarMainActivity.this, DetailDiaryActivity.class);
+                int id = diary.getId();
+                intent.putExtra(EXTRA_DIARY_ID, id);
+                startActivityForResult(intent, DETAIL_DIARY_ACTIVITY_REQUEST_CODE);
+            }
+        });
+        loadDateDiary();
     }
 
     private void loadDateDiary() {
@@ -88,13 +97,16 @@ public class CalendarMainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // really just refreshing the screen after data changes
-        if (requestCode == NEW_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            loadDateDiary();
-        } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             loadDateDiary();
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onBackPressed(){
+        setResult(RESULT_OK);
+        finish();
     }
 }

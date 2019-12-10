@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteAbortException;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -59,7 +62,6 @@ public class AddDiaryActivity extends DiaryActivity{
 
         //set date int title (today)
         Date c = Calendar.getInstance().getTime();
-        SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yy");
         date = df.format(c);
 
         setTitle(date);
@@ -92,7 +94,7 @@ public class AddDiaryActivity extends DiaryActivity{
         getDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startDrawing();
+                getFromDrawing();
             }
 
         });
@@ -103,11 +105,10 @@ public class AddDiaryActivity extends DiaryActivity{
                 DatePickerDialog dialog = new DatePickerDialog(AddDiaryActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-
                         mYear = year;
                         mMonth = month+1;
                         mDate = dayOfMonth;
-                        date = String.format("%d 년 %d 월 %d 일", year, month+1, dayOfMonth);
+                        date = String.format("%d.%d.%d", mYear, mMonth, mDate);
                         Toast.makeText(AddDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
                         setTitle(date);
                     }
@@ -169,45 +170,43 @@ public class AddDiaryActivity extends DiaryActivity{
         }
 
         if (id == R.id.action_check) {
-            // Create a new Intent for the reply.
             Intent replyIntent = new Intent();
-            if (TextUtils.isEmpty(edit.getText())) {
-                // No word was entered, set the result accordingly.
+            Drawable drawable = imageView.getDrawable();
+            if (TextUtils.isEmpty(edit.getText()) && (sign != 1)) {
                 setResult(RESULT_CANCELED, replyIntent);
             } else {
-                // Get the new word that the user entered.
                 String context = edit.getText().toString();
-                byte[] image = null;
-                if (bitmap!=null){
-                    image = bitmapToByte(bitmap);
-                }
-                String date = this.date;
 
+                mCurrent = new Diary();
                 //Input
-                Diary diary = new Diary();
-                diary.setContext(context);
-                diary.setYear(mYear);
-                diary.setMonth(mMonth);
-                diary.setDayOfMonth(mDate);
+                mCurrent.setContext(context);
+                mCurrent.setYear(mYear);
+                mCurrent.setMonth(mMonth);
+                mCurrent.setDayOfMonth(mDate);
 
-                diary.setImg(image);
-                try{
-                    mDiaryDAO.insert(diary);
-                }catch (SQLiteAbortException e){
+                if (sign == 1) {
+                    Bitmap bmp = ((BitmapDrawable) drawable).getBitmap();
+                    if (bmp == null) {
+                        mCurrent.setImg(null);
+                    } else {
+                        byte[] img = bitmapToByte(bmp);
+                        mCurrent.setImg(img);
+                    }
+                } else {
+                    mCurrent.setImg(null);
+                }
+                try {
+                    mDiaryDAO.insert(mCurrent);
+                } catch (SQLiteAbortException e) {
                     Toast.makeText(AddDiaryActivity.this, getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
                 }
 
                 // Set the result status to indicate success.
-                setResult(RESULT_OK, replyIntent);
+                setResult(RESULT_OK);
             }
             finish();
         }
 
-
         return super.onOptionsItemSelected(item);
     }
-
-
-
-
 }

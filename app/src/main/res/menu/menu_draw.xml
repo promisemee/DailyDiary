@@ -8,7 +8,7 @@
     <item
         android:id="@+id/action_x"
         android:title=""
-        android:icon="@drawable/x"
+        android:icon="@drawable/whitex"
         app:showAsAction="ifRoom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -16,7 +16,7 @@
     <item
         android:id="@+id/action_check"
         android:title=""
-        android:icon="@drawable/tick"
+        android:icon="@drawable/whitecheck"
         app:showAsAction="ifRoom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

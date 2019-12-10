@@ -3,6 +3,7 @@ package com.example.daily;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import com.example.daily.model.Diary;
@@ -48,7 +54,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
                         Diary diary = mDiaryList.get(position);
                         clickListener.onItemClick(diary);
                     }
-
                 }
             });
         }
@@ -65,7 +70,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
 
     @Override
     @NonNull
-    // add String data to a ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (mDiaryList != null) {
             Diary mCurrent = getDiaryAtPosition(position);
@@ -73,13 +77,13 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
             TextView contentView = holder.contentView;
             ImageView imageView = holder.imageView;
 
-            Bitmap bmp = null;
+            imageView.setImageBitmap(null);
+            imageView.setVisibility(View.GONE);
             byte[] bytes = mCurrent.getImg();
             if (bytes!=null){
-                bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                imageView.setVisibility(View.VISIBLE);
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 imageView.setImageBitmap(bmp);
-            }else{
-                imageView .setVisibility(View.GONE);
             }
 
             String date = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear();
@@ -100,8 +104,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
         return cut+"\n";
     }
 
-    // getItemCount() is called many times, and when it is first called,
-    // mWordList has not been updated (means initially, it's null, and we can't return null).
     @Override
     public int getItemCount() {
         if (mDiaryList != null)
@@ -110,13 +112,12 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     }
 
     public void updateDiary(List<Diary> d){
+        Collections.sort(d, new sortByDate());
+        //Collections.sort(d, new sortById());
         this.mDiaryList = d;
         notifyDataSetChanged();
     }
 
-    // Gets the word at a given position.
-    // This method is useful for identifying which word
-    // was clicked in methods that handle user events.
     private Diary getDiaryAtPosition(int position) {
         return mDiaryList.get(position);
     }
@@ -128,6 +129,32 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
     public interface ClickListener {
         void onItemClick(Diary diary);
     }
+    class sortByDate implements Comparator<Diary> {
+        @Override
+        public int compare(Diary a, Diary b){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            Date date1 = null;
+            Date date2 = null;
+            try {
+                String string1 = a.getYear()+"/"+a.getMonth()+"/"+a.getDayOfMonth();
+                String string2 = b.getYear()+"/"+b.getMonth()+"/"+b.getDayOfMonth();
+                date1 = sdf.parse(string1);
+                date2 = sdf.parse(string2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if (date2.compareTo(date1)==0){
+                return b.getId() - a.getId();
+            }
 
+            return date2.compareTo(date1);
+        }
+    }
 
+    class sortById implements Comparator<Diary>{
+        @Override
+        public int compare(Diary a, Diary b){
+            return a.getId()-b.getId();
+        }
+    }
 }

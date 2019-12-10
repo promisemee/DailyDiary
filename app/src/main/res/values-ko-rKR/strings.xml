@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Daily</string>
+    <string name="action_settings">설정</string>
+    <string name="seemore">더보기</string>
+    <string name="deleteAll">일기를 모두 삭제하시겠습니까?</string>
+    <string name="no">아니오</string>
+    <string name="yes">네</string>
+    <string name="update">업데이트</string>
+    <string name="delete">삭제</string>
+    <string name="share">공유</string>
+    <string name="crop">크롭하기</string>
+    <string name="cameraError">카메라 에러</string>
+    <string name="cancel">정말 나가시겠습니까?</string>
+    <string name="nodiary">일기가 없어요!</string>
+    <string name="sthwrong">에러! 다시 시도해주세요</string>
+</resources>

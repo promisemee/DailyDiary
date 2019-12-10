@@ -4,6 +4,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
@@ -14,13 +16,23 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.example.daily.db.DiaryDAO;
 import com.example.daily.model.Diary;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+
+import static com.example.daily.DrawActivity.EXTRA_OUTPUT;
 
 public class DiaryActivity extends AppCompatActivity {
 
@@ -38,11 +50,17 @@ public class DiaryActivity extends AppCompatActivity {
     protected Bitmap bitImg;
     byte[] image;
     int sign = 0;
+    Uri photoUri;
+    String filepath;
+    String mCurrentPhotoPath;
+    File file;
+
 
     protected Calendar calendar = Calendar.getInstance();
     int mYear = calendar.get(Calendar.YEAR);
     int mMonth = calendar.get(Calendar.MONTH)+1;
     int mDate = calendar.get(Calendar.DAY_OF_MONTH);
+    SimpleDateFormat df = new SimpleDateFormat("dd.MM.yy");
 
     protected void getFromAlbum(){
         Intent intent = new Intent();
@@ -53,12 +71,77 @@ public class DiaryActivity extends AppCompatActivity {
 
     protected void getFromCamera(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, PICK_FROM_CAMERA);
+        if (intent.resolveActivity(getPackageManager())!=null){
+            File photoFile = null;
+            try{
+                photoFile = createImageFile();
+            }catch(IOException e){
+                Log.i("#TEST", e.toString());
+            }
+
+            if (photoFile!=null){
+                photoUri = FileProvider.getUriForFile(this, getPackageName(),photoFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, PICK_FROM_CAMERA);
+            }
+        }
     }
 
-    protected void startDrawing(){
+    protected void getFromDrawing(){
         Intent intent = new Intent(this, DrawActivity.class);
-        startActivityForResult(intent, PICK_FROM_DRAWING);
+        if (intent.resolveActivity(getPackageManager())!=null){
+            try{
+                file = createImageFile();
+                filepath = file.getAbsolutePath();
+                intent.putExtra(EXTRA_OUTPUT, filepath);
+                startActivityForResult(intent, PICK_FROM_DRAWING);
+            }catch(IOException e){};
+
+        }
+    }
+
+    protected File createImageFile() throws IOException{
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "JPEG_"+timeStamp+"_";
+        File imageFile = null;
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        if(!storageDir.exists()){
+            storageDir.mkdirs();
+        }
+        imageFile = File.createTempFile(fileName, ".jpg", storageDir);
+        mCurrentPhotoPath = imageFile.getAbsolutePath();
+
+        return imageFile;
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if ((requestCode==PICK_FROM_CAMERA)&&(resultCode==RESULT_OK)){
+            try{
+                imageView.setImageURI(photoUri);
+            }catch(Exception e){Log.i("TEST", e.toString());}
+            sign = 1;
+        }
+
+        if ((requestCode==PICK_FROM_ALBUM)&&(resultCode==RESULT_OK)){
+            try{
+                InputStream in = getContentResolver().openInputStream(data.getData());
+                bitmap = BitmapFactory.decodeStream(in);
+                in.close();
+                imageView.setImageBitmap(bitmap);
+            }catch(Exception e){
+                Toast.makeText(this, getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
+            }
+            sign = 1;
+        }
+
+        if((requestCode==PICK_FROM_DRAWING)&&(resultCode==RESULT_OK)){
+            Bitmap bitmap = BitmapFactory.decodeFile(filepath);
+            imageView.setImageBitmap(bitmap);
+            sign = 1;
+        }
     }
 
     protected Bitmap byteToBitmap(byte[] byteArray){
@@ -68,7 +151,7 @@ public class DiaryActivity extends AppCompatActivity {
 
     protected byte[] bitmapToByte(Bitmap bmp){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+        bmp.compress(Bitmap.CompressFormat.PNG, 60, stream);
         return stream.toByteArray();
     }
 
@@ -87,44 +170,6 @@ public class DiaryActivity extends AppCompatActivity {
             }else{
                 Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
             }
-        }
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        if ((requestCode==PICK_FROM_CAMERA)&&(resultCode==RESULT_OK)){
-            if (data.getExtras()!=null) {
-                bitmap = (Bitmap) data.getExtras().get("data");
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
-                }
-            }
-            sign = 1;
-        }
-
-        if ((requestCode==PICK_FROM_ALBUM)&&(resultCode==RESULT_OK)){
-            try{
-                InputStream in = getContentResolver().openInputStream(data.getData());
-                bitmap = BitmapFactory.decodeStream(in);
-                in.close();
-                imageView.setImageBitmap(bitmap);
-            }catch(Exception e){
-                Toast.makeText(this, getString(R.string.sthwrong), Toast.LENGTH_SHORT).show();
-            }
-            sign = 1;
-        }
-
-        if((requestCode==PICK_FROM_DRAWING)&&(resultCode==RESULT_OK)){
-            if (data.getExtras()!=null) {
-                byte[] temp = data.getByteArrayExtra("drawing");
-                if (temp != null) {
-                    bitmap = byteToBitmap(temp);
-                    imageView.setImageBitmap(bitmap);
-                }
-            }
-            sign = 1;
         }
     }
 
@@ -151,5 +196,4 @@ public class DiaryActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
-
 }

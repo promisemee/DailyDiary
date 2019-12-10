@@ -9,7 +9,6 @@ import com.example.daily.model.Diary;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -49,12 +48,13 @@ public class MainActivity extends AppCompatActivity{
 
         mRecyclerView = findViewById(R.id.recyclerview);
 
+        mDiaryList = mDiaryDAO.getDiaryList();
         mDiaryAdapter = new DiaryListAdapter(this, mDiaryList);
         mRecyclerView.setAdapter(mDiaryAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
-        //New Diary
+        //Button for New Diary
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,18 +79,19 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void loadDiary(){
-        mDiaryAdapter.updateDiary(mDiaryDAO.getDiaryList());
+        mDiaryList = mDiaryDAO.getDiaryList();
+        mDiaryAdapter.updateDiary(mDiaryList);
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        // really just refreshing the screen after data changes
-        if (requestCode == NEW_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             loadDiary();
-        } else if (requestCode == DETAIL_DIARY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            loadDiary();
+            if (requestCode==NEW_DIARY_ACTIVITY_REQUEST_CODE){
+                mRecyclerView.smoothScrollToPosition(0);
+            }
         }else if(requestCode==SETTING_ACTIVITY_REQUEST_CODE){
             loadDiary();
         }else if(resultCode == RESULT_CANCELED){
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu.menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_calendar) {
             Intent intent = new Intent(MainActivity.this, CalendarMainActivity.class);
             startActivity(intent);
