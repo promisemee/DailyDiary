@@ -47,7 +47,6 @@ public class DetailDiaryActivity extends DiaryActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // really just refreshing the screen after data changes
         if ((requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE) && (resultCode == RESULT_OK)) {
             loadDetail();
         }else if ((requestCode == UPDATE_DIARY_ACTIVITY_REQUEST_CODE) && (resultCode == RESULT_CANCELED)){
@@ -74,7 +73,6 @@ public class DetailDiaryActivity extends DiaryActivity {
 
             String dateString = mCurrent.getDayOfMonth()+"."+mCurrent.getMonth()+"."+mCurrent.getYear()%100;
             setTitle(dateString);
-
         }
     }
 

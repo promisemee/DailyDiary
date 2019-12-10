@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Daily</string>
+    <string name="app_name">데일리</string>
     <string name="action_settings">설정</string>
     <string name="seemore">더보기</string>
     <string name="deleteAll">일기를 모두 삭제하시겠습니까?</string>

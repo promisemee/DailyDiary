@@ -2,6 +2,8 @@ package com.example.daily;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +41,7 @@ public class CalendarMainActivity extends AppCompatActivity {
 
     int mDate, mMonth, mYear;
 
-    TextView tv;
+    TextView emptyRecycler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,7 @@ public class CalendarMainActivity extends AppCompatActivity {
         mCalendarAdapter = new CalendarListAdapter(this, mDiaryList);
         mRecyclerView.setAdapter(mCalendarAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        emptyRecycler = findViewById(R.id.recyclerviewempty);
 
         calendar = Calendar.getInstance();
         mYear = calendar.get(Calendar.YEAR);
@@ -90,7 +93,18 @@ public class CalendarMainActivity extends AppCompatActivity {
     }
 
     private void loadDateDiary() {
-        mCalendarAdapter.updateDiary(mDiaryDAO.getDiaryListWithDate(mDate, mMonth, mYear));
+        mDiaryList = mDiaryDAO.getDiaryListWithDate(mDate, mMonth, mYear);
+        Log.i("#TEST", "calendarchange");
+        for(int i=0;i<mDiaryList.size();i++){
+            Log.i("#TEST", String.valueOf(mDiaryList.get(i).getId()));
+        }
+        mCalendarAdapter.updateDiary(mDiaryList);
+        if (!mDiaryList.isEmpty()){
+            emptyRecycler.setVisibility(View.GONE);
+        }else{
+            emptyRecycler.setVisibility(View.VISIBLE);
+            emptyRecycler.setText(getString(R.string.nodiary));
+        }
     }
 
     @Override

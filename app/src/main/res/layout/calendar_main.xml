@@ -22,10 +22,17 @@
             android:layout_marginEnd="16dp"
             android:layout_marginRight="16dp" />
 
+        <TextView
+            android:id="@+id/recyclerviewempty"
+            android:layout_width="match_parent"
+            android:layout_height="167dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            tools:text="@string/nodiary" />
+
         <include
             android:id="@+id/include"
             layout="@layout/calendarcontent"
-            android:layout_width="wrap_content"
 
             />
     </LinearLayout>

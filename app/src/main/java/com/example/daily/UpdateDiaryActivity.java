@@ -129,16 +129,14 @@ public class UpdateDiaryActivity extends DiaryActivity {
            public void onClick(View v){
                DatePickerDialog dialog = new DatePickerDialog(UpdateDiaryActivity.this, new DatePickerDialog.OnDateSetListener() {
                    @Override
-                   public void onDateSet(DatePicker datePicker, int year, int month, int d) {
-
-                       mMonth = month+1;
+                   public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
                        mYear = year;
-                       mDate = d;
-                       date = String.format("%d.%d.%d", mYear, mMonth, mDate);
-                       Toast.makeText(UpdateDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
+                       mMonth = month+1;
+                       mDate = dayOfMonth;
+                       date = String.format("%d.%d.%d", mDate,mMonth,mYear%100);
                        setTitle(date);
                    }
-               }, mYear, mMonth-1, mDate);
+               }, mYear, mMonth-1, mDate );
 
                dialog.show();
 
@@ -148,7 +146,7 @@ public class UpdateDiaryActivity extends DiaryActivity {
         imageView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                final String[] options = new String[]{getString(R.string.delete),getString(R.string.crop)};
+                final String[] options = new String[]{getString(R.string.delete)};
 
                 AlertDialog.Builder dialog = new AlertDialog.Builder(UpdateDiaryActivity.this);
 
@@ -159,8 +157,6 @@ public class UpdateDiaryActivity extends DiaryActivity {
                             case "delete":
                                 imageView.setImageBitmap(null);
                                 sign = 0;
-                                break;
-                            case "crop":
                                 break;
                         }
                     }

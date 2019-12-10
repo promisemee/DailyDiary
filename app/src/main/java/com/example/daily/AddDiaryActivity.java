@@ -108,8 +108,7 @@ public class AddDiaryActivity extends DiaryActivity{
                         mYear = year;
                         mMonth = month+1;
                         mDate = dayOfMonth;
-                        date = String.format("%d.%d.%d", mYear, mMonth, mDate);
-                        Toast.makeText(AddDiaryActivity.this, date, Toast.LENGTH_SHORT).show();
+                        date = String.format("%d.%d.%d", mMonth, mDate,mYear%100);
                         setTitle(date);
                     }
                 }, mYear, mMonth-1, mDate );

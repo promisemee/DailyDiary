@@ -19,7 +19,6 @@ public class DrawView extends View {
     private Canvas drawCanvas;
     public Bitmap canvasBitmap;
     private ArrayList<Path> pathList = new ArrayList<Path>();
-    private ArrayList<Path> undoList = new ArrayList<Path>();
 
     public DrawView(Context context){
         super(context);
@@ -62,7 +61,6 @@ public class DrawView extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                undoList.clear();
                 drawPath.reset();
                 drawPath.moveTo(touchX, touchY);
                 break;
@@ -71,7 +69,6 @@ public class DrawView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 drawPath.lineTo(touchX, touchY);
-                drawCanvas.drawPath(drawPath, drawPaint);
                 pathList.add(drawPath);
                 drawPath = new Path();
 
@@ -85,8 +82,19 @@ public class DrawView extends View {
 
     public void onClickUndo(){
         if(pathList.size()>0){
-            undoList.add(pathList.remove(pathList.size()-1));
+            pathList.remove(pathList.size()-1);
+            drawCanvas.save();
             invalidate();
         }
+    }
+
+    public void saveToBitmap(){
+        Path tempPath = null;
+        for(int i=0;i<pathList.size();i++){
+            tempPath = pathList.get(i);
+            drawCanvas.drawPath(tempPath, drawPaint);
+            tempPath = null;
+        }
+
     }
 }

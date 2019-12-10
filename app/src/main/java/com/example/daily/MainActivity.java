@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.LinkedList;
@@ -36,6 +37,8 @@ public class MainActivity extends AppCompatActivity{
     DiaryListAdapter mDiaryAdapter;
     List<Diary> mDiaryList = new LinkedList<>();
 
+    TextView emptyRecycler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity{
         mRecyclerView.setAdapter(mDiaryAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        emptyRecycler = findViewById(R.id.emptyrecycler);
 
         //Button for New Diary
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -80,6 +84,12 @@ public class MainActivity extends AppCompatActivity{
 
     private void loadDiary(){
         mDiaryList = mDiaryDAO.getDiaryList();
+        if (!mDiaryList.isEmpty()){
+            emptyRecycler.setVisibility(View.GONE);
+        }else {
+            emptyRecycler.setVisibility(View.VISIBLE);
+            emptyRecycler.setText(getString(R.string.nodiary));
+        }
         mDiaryAdapter.updateDiary(mDiaryList);
 
     }
