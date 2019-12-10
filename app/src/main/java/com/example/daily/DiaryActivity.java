@@ -23,13 +23,10 @@ import com.example.daily.model.Diary;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 
 import static com.example.daily.DrawActivity.EXTRA_OUTPUT;
@@ -48,7 +45,6 @@ public class DiaryActivity extends AppCompatActivity {
     Diary mCurrent;
     protected String date;
     protected Bitmap bitImg;
-    byte[] image;
     int sign = 0;
     Uri photoUri;
     String filepath;
@@ -145,8 +141,7 @@ public class DiaryActivity extends AppCompatActivity {
     }
 
     protected Bitmap byteToBitmap(byte[] byteArray){
-        Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        return bitmap;
+        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 
     protected byte[] bitmapToByte(Bitmap bmp){
@@ -159,16 +154,16 @@ public class DiaryActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[]permissions, @NonNull int[]grantResults){
         if (requestCode==PICK_FROM_CAMERA){
             if(grantResults[0]==0){
-                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.permissionok, Toast.LENGTH_SHORT).show();
             }else{
-                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.permissionfail, Toast.LENGTH_SHORT).show();
             }
         }
         if (requestCode==PICK_FROM_ALBUM){
             if(grantResults[0]==0){
-                Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.permissionok, Toast.LENGTH_SHORT).show();
             }else{
-                Toast.makeText(this, "FAIL", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.permissionfail, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -178,7 +173,7 @@ public class DiaryActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        builder.setMessage(getString(R.string.cancel));
+        builder.setMessage(R.string.cancel);
 
         builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener(){
             @Override

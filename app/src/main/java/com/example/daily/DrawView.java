@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class DrawView extends View {
 
 
+    //Reference : https://itlove.tistory.com/513
+
     private Path drawPath;
     private Paint drawPaint, canvasPaint;
     private int paintColor = 0xFF000000;
@@ -80,6 +82,8 @@ public class DrawView extends View {
         return true;
     }
 
+    //reference complete
+
     public void onClickUndo(){
         if(pathList.size()>0){
             pathList.remove(pathList.size()-1);
@@ -95,6 +99,5 @@ public class DrawView extends View {
             drawCanvas.drawPath(tempPath, drawPaint);
             tempPath = null;
         }
-
     }
 }

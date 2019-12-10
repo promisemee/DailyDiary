@@ -15,6 +15,8 @@
     <string name="cancel">Are you sure you want to exit </string>
     <string name="yes">yes</string>
     <string name="no">no</string>
+    <string name="permissionok">Permission Granted!</string>
+    <string name="permissionfail">Permission Failed</string>
 
     <!--Detail Diary-->
     <string name="update">update</string>

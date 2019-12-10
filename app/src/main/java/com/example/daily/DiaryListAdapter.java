@@ -61,8 +61,6 @@ public class DiaryListAdapter extends RecyclerView.Adapter<DiaryListAdapter.View
 
     @Override
     @NonNull
-    // read in the description of the layout of a single item in the list
-    // use it to create a ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = mInflater.inflate(R.layout.diary_item, parent, false);
         return new ViewHolder(itemView);

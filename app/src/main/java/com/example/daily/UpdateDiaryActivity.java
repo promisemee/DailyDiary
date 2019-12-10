@@ -176,12 +176,8 @@ public class UpdateDiaryActivity extends DiaryActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.menu.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_x) {
             Intent replyIntent = new Intent();
             setResult(RESULT_CANCELED, replyIntent);

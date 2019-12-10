@@ -14,4 +14,6 @@
     <string name="cancel">정말 나가시겠습니까?</string>
     <string name="nodiary">일기가 없어요!</string>
     <string name="sthwrong">에러! 다시 시도해주세요</string>
+    <string name="permissionok">권한이 승인되었습니다</string>
+    <string name="permissionfail">권한이 거부되었습니다</string>
 </resources>

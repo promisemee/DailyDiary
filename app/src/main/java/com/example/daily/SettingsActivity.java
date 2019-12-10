@@ -46,7 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int id)
                     {
-
+                        //Does nothing!
                     }
                 });
                 AlertDialog alertDialog = builder.create();
